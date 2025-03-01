@@ -1,0 +1,24 @@
+{
+  "name": "electiva2_clontinder_jaac",
+  "version": "1.0.0",
+  "description": "Academic project to create a Tinder Clone using Express.js",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node --watch index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JefersonArdila/Electiva2_ClonTinder_JAAC.git"
+  },
+  "author": "Jeferson Ardila - Johan Rojas",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JefersonArdila/Electiva2_ClonTinder_JAAC/issues"
+  },
+  "homepage": "https://github.com/JefersonArdila/Electiva2_ClonTinder_JAAC#readme",
+  "dependencies": {
+    "express": "^4.21.2",
+    "express-validator": "^7.2.1"
+  }
+}
