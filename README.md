@@ -5,6 +5,7 @@
 - Jeferson Arley Ardila Cardona  
 - Johan Alexander Rojas Suárez  
 
+---
 
 ## ** Descripción**  
 Este proyecto consiste en la creación de una API REST que replica las funcionalidades principales de Tinder. Se desarrollará utilizando **Node.js y Express**   
