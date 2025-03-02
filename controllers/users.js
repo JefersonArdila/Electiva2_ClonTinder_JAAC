@@ -1,10 +1,18 @@
-const users = require("../data/users");
+let users = require("../data/users");
 const { query, body } = require("express-validator");
 
 const getUsers = (req, res) =>{
     res.status(200).json(users);
 };
 
+const getUserId = (req, res) => {
+    const { id } = req.params;
+    const user = users.find(user => user.id === parseInt(id));
+        if (!user) {
+          return res.status(404).json({ error: "Usuario no encontrado" });
+        }
+    res.status(200).json(user);
+};
 
 const createUser = (req, res) => {
     const { firstName, lastName, age, email, gender } = req.body;
@@ -45,8 +53,20 @@ const updateUser = (req, res) => {
     res.json(users[userIndex]);
 };
 
+const deleteUser = (req, res) => {
+  const { id } = req.params;
+  const user = users.find((user) => user.id === parseInt(id));
+  if (!user) {
+    return res.status(404).json({ error: "Usuario no encontrado" });
+  };
+  users = users.filter(user => user.id !== parseInt(id));
+  res.status(200).json(user);
+};
+
 module.exports = {
   getUsers,
   createUser,
-  updateUser
+  updateUser,
+  getUserId,
+  deleteUser,
 };
