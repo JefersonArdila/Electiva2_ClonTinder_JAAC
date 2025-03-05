@@ -4,23 +4,73 @@ const { param, body } = require("express-validator");
 const validateGetUser = [param("id").notEmpty().isNumeric().escape()];
 
 const validateCreateUser = [
-  body("firstName").notEmpty().isString().escape(),
-  body("lastName").notEmpty().isString().escape(),
-  body("age").notEmpty().isNumeric().escape(),
-  body("email").notEmpty().isEmail().escape(),
-  body("gender").notEmpty().isString().escape(),
+  body("firstName")
+    .notEmpty()
+    .isString()
+    .escape()
+    .withMessage("El nombre debe contener solo letras"),
+  body("lastName")
+    .notEmpty()
+    .isString()
+    .escape()
+    .withMessage("El apellido debe contener solo letras"),
+  body("age")
+    .notEmpty()
+    .isNumeric()
+    .escape()
+    .withMessage("La edad debe ser un número"),
+  body("email")
+    .notEmpty()
+    .isEmail()
+    .escape()
+    .withMessage("El correo debe ser válido"),
+  body("gender")
+    .notEmpty()
+    .isString()
+    .escape()
+    .withMessage("El género debe contener solo letras"),
 ];
 
 const validateUpdateUser = [
-  param("id").notEmpty().isNumeric().escape(),
-  body("firstName").notEmpty().isString().escape(),
-  body("lastName").notEmpty().isString().escape(),
-  body("age").notEmpty().isNumeric().escape(),
-  body("email").notEmpty().isEmail().escape(),
-  body("gender").notEmpty().isString().escape(),
+  param("id")
+    .notEmpty()
+    .isNumeric()
+    .escape()
+    .withMessage("El id debe ser un número"),
+  body("firstName")
+    .notEmpty()
+    .isString()
+    .escape()
+    .withMessage("El nombre debe contener solo letras"),
+  body("lastName")
+    .notEmpty()
+    .isString()
+    .escape()
+    .withMessage("El apellido debe contener solo letras"),
+  body("age")
+    .notEmpty()
+    .isNumeric()
+    .escape()
+    .withMessage("La edad debe ser un número"),
+  body("email")
+    .notEmpty()
+    .isEmail()
+    .escape()
+    .withMessage("El correo debe ser válido"),
+  body("gender")
+    .notEmpty()
+    .isString()
+    .escape()
+    .withMessage("El género debe contener solo letras"),
 ];
 
-const validateDeleteUser = [param("id").notEmpty().isNumeric().escape()];
+const validateDeleteUser = [
+  param("id")
+    .notEmpty()
+    .isNumeric()
+    .escape()
+    .withMessage("El id debe ser un número")
+  ];
 
 /* const isValid = (req, res, next) => {
      const result = validationResult(req);
