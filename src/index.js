@@ -1,7 +1,7 @@
 const express = require('express');
-const userRouter = require('./routes/users');
-const authRouter = require('./routes/auth');
-const swipeRoutes  = require('./routes/swipes');
+const userRouter = require('./application/routes/usersRoutes');
+const authRouter = require('./application/routes/authRoutes');
+const swipeRoutes  = require('./application/routes/swipesRoutes');
 const app = express();
 
 const PORT = 3000;
