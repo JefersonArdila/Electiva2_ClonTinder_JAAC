@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/JefersonArdila/Electiva2_ClonTinder_JAAC#readme",
   "dependencies": {
+    "dotenv": "^16.5.0",
     "express": "^4.21.2",
     "express-validator": "^7.2.1"
   }
