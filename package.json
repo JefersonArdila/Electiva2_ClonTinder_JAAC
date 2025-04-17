@@ -18,8 +18,13 @@
   },
   "homepage": "https://github.com/JefersonArdila/Electiva2_ClonTinder_JAAC#readme",
   "dependencies": {
+    "@prisma/client": "^6.6.0",
     "dotenv": "^16.5.0",
     "express": "^4.21.2",
-    "express-validator": "^7.2.1"
+    "express-validator": "^7.2.1",
+    "pg": "^8.14.1"
+  },
+  "devDependencies": {
+    "prisma": "^6.6.0"
   }
 }
