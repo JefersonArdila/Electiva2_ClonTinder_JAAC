@@ -14,22 +14,26 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Gender {
+  MASCULINO
+  FEMENINO
+  OTRO
+}
+
 model User {
   id          String   @id @default(cuid())
   firstName   String
   lastName   String
   email       String   @unique
-  gender     String
+  password    String
+  gender     Gender
   //phone       String
   //country     String
   //city        String
   //dateOfBirth DateTime
   //createdAt   DateTime @default(now())
   //updatedAt   DateTime @updatedAt
-  //deletedAt   DateTime?
-  //isDeleted   Boolean  @default(false)
   //isActive    Boolean  @default(true)
-  //password    String
   //profilePic  String?
   //bio         String?
   //posts       Post[]
