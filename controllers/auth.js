@@ -1,3 +1,25 @@
+const { PrismaClient } = require("../generated/prisma/client.js");
+const prisma = new PrismaClient();
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+
+const registerUser = async (req, res) => {
+  const { firstName, lastName, age, email, gender, password } = req.body;
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  const newUser = await prisma.user.create({
+    data: {
+      firstName,
+      lastName,
+      age,
+      email,
+      gender,
+      password: hashedPassword,
+    },
+  });
+  res.status(201).json({ message: "Usuario registrado correctamente" });
+};
+
 const loginUser = (req, res) => {
     const credentials = {
         user: "admin",
@@ -13,7 +35,6 @@ const loginUser = (req, res) => {
 const logoutUser = (req, res) => {
   res.status(200).json({ message: "Sesión cerrada correctamente"});
 };
-
 
 const resetPassword = (req, res) => {
     const credentials = {
@@ -31,6 +52,7 @@ const resetPassword = (req, res) => {
 };
 
 module.exports = {
+  registerUser,
   loginUser,
   logoutUser,
   resetPassword
