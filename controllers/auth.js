@@ -20,6 +20,7 @@ const registerUser = async (req, res) => {
   res.status(201).json({ message: "Usuario registrado correctamente" });
 };
 
+<<<<<<< HEAD
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
   // Buscar el usuario en la base de datos
