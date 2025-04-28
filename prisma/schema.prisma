@@ -14,35 +14,31 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Gender {
-  MASCULINO
-  FEMENINO
-  OTRO
+enum Role {
+  ADMIN
+  USER
 }
 
 model User {
   id          String   @id @default(cuid())
   firstName   String
-  lastName   String
+  lastName    String
   email       String   @unique
   password    String
-  gender     Gender
+  gender      String
+  role        Role
+  //To Do: Set "USER" role as default value
   //phone       String
   //country     String
   //city        String
   //dateOfBirth DateTime
+  //profilePic  String?
+  //bio         String?
+  //likes       Like[]
+  //matches     Match[]
+  //chats       Chat[]
   //createdAt   DateTime @default(now())
   //updatedAt   DateTime @updatedAt
   //isActive    Boolean  @default(true)
-  //profilePic  String?
-  //bio         String?
-  //posts       Post[]
-  //comments    Comment[]
-  //likes       Like[]
-  //followers   Follower[]
-  //following   Following[]
   //notifications Notification[]
-  //messages     Message[]
-  //chats       Chat[]
-  //conversations Conversation[]
 }
