@@ -4,12 +4,11 @@ const userRoutes = require("./routes/users");
 const authRoutes = require("./routes/auth");
 const swipeRoutes = require("./routes/swipes");
 const authenticationToken = require("./middlewares/auth");
-const { PrismaClient } = require("./generated/prisma/client.js");
+const { PrismaClient } = require("./generated/prisma");
 const prisma = new PrismaClient();
 const app = express();
 
 const PORT = process.env.PORT || 3000;
-console.log(PORT);
 
 app.use(express.json());
 app.use("/api", userRoutes, authRoutes, swipeRoutes);
