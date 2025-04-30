@@ -1,10 +1,10 @@
 require("dotenv").config();
 const express = require("express");
-const userRoutes = require("./routes/users");
-const authRoutes = require("./routes/auth");
-const swipeRoutes = require("./routes/swipes");
-const authenticationToken = require("./middlewares/auth");
-const { PrismaClient } = require("./generated/prisma");
+const userRoutes = require("./application/routes/users");
+const authRoutes = require("./application/routes/auth");
+const swipeRoutes = require("./application/routes/swipes");
+const authenticationToken = require("./infrastructure/middlewares/auth");
+const { PrismaClient } = require("../generated/prisma");
 const prisma = new PrismaClient();
 const app = express();
 
