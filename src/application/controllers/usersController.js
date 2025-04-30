@@ -1,11 +1,5 @@
 const { validationResult } = require("express-validator");
 
-let users = require("../data/users");
-
-const getUsers = (req, res) => {
-  res.status(200).json(users);
-};
-
 const getUserId = (req, res) => {
   const result = validationResult(req);
   if (result.isEmpty()) {
@@ -75,7 +69,6 @@ const deleteUser = (req, res) => {
 };
 
 module.exports = {
-  getUsers,
   createUser,
   updateUser,
   getUserId,
