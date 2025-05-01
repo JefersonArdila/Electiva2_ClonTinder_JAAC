@@ -5,7 +5,7 @@ const {
   getMatches,
   getSwipes,
 } = require("../controllers/swipesController");
-const { validateCreateSwipe } = require("../middlewares/swipesValidations");
+const { validateCreateSwipe } = require("../../infrastructure/middlewares/swipesValidations");
 
 router.post("/swipes", validateCreateSwipe, createSwipe);
 router.get("/swipes", getSwipes);
