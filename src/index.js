@@ -28,12 +28,12 @@ app.get("/protected-route", authenticationToken, (req, res) => {
   res.send("Esta es una ruta protegida");
 });
 
-// ✅ Solo ejecuta el servidor si este archivo se ejecuta directamente (no desde pruebas)
+// Solo ejecuta el servidor si este archivo se ejecuta directamente (no desde pruebas)
 if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`Server listening on: http://localhost:${PORT}`);
   });
 }
 
-// ✅ Exportar `app` para poder usarlo en los tests
+// Exportar `app` para poder usarlo en los tests
 module.exports = app;
