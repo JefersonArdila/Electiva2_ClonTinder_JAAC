@@ -1,14 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const {
-  createSwipe,
-  getMatches,
-  getSwipes,
-} = require("../controllers/swipesController");
+const { createSwipe, getSwipes, getMatches } = require("../controllers/swipesController");
 const { validateCreateSwipe } = require("../../infrastructure/middlewares/swipesValidations");
+const authenticationToken = require("../../infrastructure/middlewares/auth");
 
-router.post("/swipes", validateCreateSwipe, createSwipe);
-router.get("/swipes", getSwipes);
-router.get("/matches", getMatches);
+router.post("/swipes", authenticationToken, validateCreateSwipe, createSwipe);
+router.get("/swipes", authenticationToken, getSwipes);
+router.get("/matches", authenticationToken, getMatches);
 
 module.exports = router;
