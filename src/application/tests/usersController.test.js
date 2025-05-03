@@ -1,87 +1,227 @@
-const request = require('supertest');
-const app = require('../../index.js');
-const { PrismaClient } = require("../../../generated/prisma");
-const prisma = new PrismaClient();
+// __tests__/userController.test.js
 
-describe('usersController', () => {
-  let user1;
-  let user2;
-  let token1;
-  let token2;
+const { validationResult } = require("express-validator");
+const userController = require("../controllers/usersController"); // Ajusta la ruta según tu proyecto
+const { PrismaClient } = require("@prisma/client");
 
-  beforeAll(async () => {
-    // Limpiar la base de datos antes de las pruebas (opcional)
-    await prisma.user.deleteMany();
-    await prisma.match.deleteMany();
-
-    // Crear dos usuarios de prueba
-    user1 = await prisma.user.create({
-      data: {
-        firstName: 'Luis',
-        lastName: 'Ramírez',
-        email: 'luis@example.com',
-        password: '123456',
-        gender: 'M',
+// Mock de PrismaClient
+jest.mock("@prisma/client", () => {
+  return {
+    PrismaClient: jest.fn().mockImplementation(() => ({
+      user: {
+        create: jest.fn(),
+        findUnique: jest.fn(),
+        update: jest.fn(),
+        delete: jest.fn(),
       },
-    });
-    user2 = await prisma.user.create({
-      data: {
-        firstName: 'Ana',
-        lastName: 'Pérez',
-        email: 'ana@example.com',
-        password: '123456',
-        gender: 'F',
-      },
-    });
+    })),
+  };
+});
 
-    // Login de ambos usuarios
-    const loginResponse1 = await request(app)
-      .post('/api/login')
-      .send({
-        email: 'luis@example.com',
-        password: '123456',
-      });
-    token1 = loginResponse1.body.token;
+// Mock de express-validator
+jest.mock("express-validator", () => ({
+  validationResult: jest.fn(),
+}));
 
-    const loginResponse2 = await request(app)
-      .post('/api/login')
-      .send({
-        email: 'ana@example.com',
-        password: '123456',
-      });
-    token2 = loginResponse2.body.token;
+const mockUser = {
+  id: "1",
+  firstName: "John",
+  lastName: "Doe",
+  email: "john.doe@example.com",
+  age: 25,
+  gender: "Male"
+};
+
+describe("UserController", () => {
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
-  afterAll(async () => {
-    await prisma.$disconnect();
+  it("should create a new user", async () => {
+    // Mokeamos el resultado del método create de Prisma
+    PrismaClient.mock.instances[0].user.create.mockResolvedValue(mockUser);
+
+    const req = {
+      body: {
+        firstName: "John",
+        lastName: "Doe",
+        email: "john.doe@example.com",
+        age: 25,
+        gender: "Male"
+      }
+    };
+
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    };
+
+    await userController.createUser(req, res);
+
+    expect(PrismaClient.mock.instances[0].user.create).toHaveBeenCalledTimes(1);
+    expect(PrismaClient.mock.instances[0].user.create).toHaveBeenCalledWith({
+      data: {
+        firstName: "John",
+        lastName: "Doe",
+        email: "john.doe@example.com",
+        age: 25,
+        gender: "Male",
+        role: "USER"
+      }
+    });
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith(mockUser);
   });
 
-  it('should create a match if both users swipe "LIKE" on each other', async () => {
-    // Ambos usuarios dan "LIKE" entre sí
-    await request(app)
-      .post('/api/swipes')
-      .set('Authorization', `Bearer ${token1}`)
-      .send({
-        targetUserId: user2.id,
-        action: 'LIKE',
-      });
+  it("should return an error if user creation fails due to validation", async () => {
+    const req = {
+      body: {
+        firstName: "",
+        lastName: "Doe",
+        email: "invalid-email",
+        age: "not-a-number",
+        gender: "Male"
+      }
+    };
 
-    await request(app)
-      .post('/api/swipes')
-      .set('Authorization', `Bearer ${token2}`)
-      .send({
-        targetUserId: user1.id,
-        action: 'LIKE',
-      });
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    };
 
-    // Verificar si se ha creado un match
-    const matches = await prisma.match.findMany({
-      where: {
-        userAId: user1.id,
-        userBId: user2.id,
-      },
+    // Simulamos que la validación falla
+    validationResult.mockReturnValue({
+      isEmpty: jest.fn().mockReturnValue(false),
+      array: jest.fn().mockReturnValue([{ msg: "Invalid data" }])
     });
 
-    expect(matches.length).toBe(1);
+    await userController.createUser(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: [{ msg: "Invalid data" }] });
+  });
+
+  it("should get user by ID", async () => {
+    PrismaClient.mock.instances[0].user.findUnique.mockResolvedValue(mockUser);
+
+    const req = {
+      params: { id: "1" }
+    };
+
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    };
+
+    await userController.getUserId(req, res);
+
+    expect(PrismaClient.mock.instances[0].user.findUnique).toHaveBeenCalledWith({
+      where: { id: "1" }
+    });
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(mockUser);
+  });
+
+  it("should return 404 if user not found", async () => {
+    PrismaClient.mock.instances[0].user.findUnique.mockResolvedValue(null);
+
+    const req = {
+      params: { id: "2" }
+    };
+
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    };
+
+    await userController.getUserId(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({ error: "Usuario no encontrado" });
+  });
+
+  it("should update an existing user", async () => {
+    const updatedUser = { ...mockUser, firstName: "Jane" };
+    PrismaClient.mock.instances[0].user.findUnique.mockResolvedValue(mockUser);
+    PrismaClient.mock.instances[0].user.update.mockResolvedValue(updatedUser);
+
+    const req = {
+      params: { id: "1" },
+      body: { firstName: "Jane" }
+    };
+
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    };
+
+    await userController.updateUser(req, res);
+
+    expect(PrismaClient.mock.instances[0].user.update).toHaveBeenCalledWith({
+      where: { id: "1" },
+      data: { firstName: "Jane" }
+    });
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(updatedUser);
+  });
+
+  it("should return 404 when updating a non-existent user", async () => {
+    PrismaClient.mock.instances[0].user.findUnique.mockResolvedValue(null);
+
+    const req = {
+      params: { id: "999" },
+      body: { firstName: "Jane" }
+    };
+
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    };
+
+    await userController.updateUser(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({ error: "Usuario no encontrado" });
+  });
+
+  it("should delete a user", async () => {
+    PrismaClient.mock.instances[0].user.findUnique.mockResolvedValue(mockUser);
+    PrismaClient.mock.instances[0].user.delete.mockResolvedValue(mockUser);
+
+    const req = {
+      params: { id: "1" }
+    };
+
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    };
+
+    await userController.deleteUser(req, res);
+
+    expect(PrismaClient.mock.instances[0].user.delete).toHaveBeenCalledWith({
+      where: { id: "1" }
+    });
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(mockUser);
+  });
+
+  it("should return 404 when deleting a non-existent user", async () => {
+    PrismaClient.mock.instances[0].user.findUnique.mockResolvedValue(null);
+
+    const req = {
+      params: { id: "999" }
+    };
+
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    };
+
+    await userController.deleteUser(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({ error: "Usuario no encontrado" });
   });
 });

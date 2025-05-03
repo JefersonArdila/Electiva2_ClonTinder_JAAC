@@ -1,5 +1,6 @@
 const { validationResult } = require("express-validator");
 
+
 const getUserId = (req, res) => {
   const result = validationResult(req);
   if (result.isEmpty()) {
