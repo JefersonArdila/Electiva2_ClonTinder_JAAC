@@ -20,25 +20,52 @@ enum Role {
 }
 
 model User {
-  id          String   @id @default(cuid())
-  firstName   String
-  lastName    String
-  email       String   @unique
-  password    String
-  gender      String
-  role        Role
-  //To Do: Set "USER" role as default value
-  //phone       String
-  //country     String
-  //city        String
-  //dateOfBirth DateTime
-  //profilePic  String?
-  //bio         String?
-  //likes       Like[]
-  //matches     Match[]
-  //chats       Chat[]
-  //createdAt   DateTime @default(now())
-  //updatedAt   DateTime @updatedAt
-  //isActive    Boolean  @default(true)
-  //notifications Notification[]
+  id           String   @id @default(cuid())
+  firstName    String
+  lastName     String
+  email        String   @unique
+  password     String
+  gender       String
+  role         Role     @default(USER)
+
+
+  swipesFrom   Swipe[]  @relation("SwipesFrom")
+  swipesTo     Swipe[]  @relation("SwipesTo")
+
+  matchesA     Match[]  @relation("MatchesA")
+  matchesB     Match[]  @relation("MatchesB")
+}
+
+model Swipe {
+  id           String   @id @default(cuid())
+  userId       String
+  targetUserId String
+  action       SwipeAction
+  createdAt    DateTime @default(now())
+
+  user         User     @relation("SwipesFrom", fields: [userId], references: [id])
+  targetUser   User     @relation("SwipesTo", fields: [targetUserId], references: [id])
+}
+
+model Match {
+  id         String   @id @default(cuid())
+  userAId    String
+  userBId    String
+  createdAt  DateTime @default(now())
+
+  userA      User     @relation("MatchesA", fields: [userAId], references: [id])
+  userB      User     @relation("MatchesB", fields: [userBId], references: [id])
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  senderId   String
+  receiverId String
+  content    String
+  createdAt  DateTime @default(now())
+}
+
+enum SwipeAction {
+  LIKE
+  DISLIKE
 }
