@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Servidor Websockets</title>
+</head>
+<body>
+    <h1>Servidor Websockets Activo!</h1>
+    <p>El servidor de Websockets está funcionando correctamente.</p>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // const socket = io('http://localhost:3000');
+        const socket = io();
+
+        socket.on('connect', () => {
+            console.log('Conectado al servidor de Websockets');
+        });
+        socket.on('message', (data) => {
+            console.log('Mensaje recibido:', data);
+        });
+        socket.on('disconnect', () => {
+            console.log('Desconectado del servidor de Websockets');
+        });
+        socket.emit('message', 'Hola desde el cliente!');
+    </script>
+</body>
+</html>
