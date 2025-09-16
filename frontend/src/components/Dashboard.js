@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import SwipeDeck from './SwipeDeck';
 import ChatRoom from './ChatRoom';  
@@ -13,18 +13,13 @@ export default function Dashboard({ user, onLogout }) {
 
   const API_URL = 'http://localhost:3000/api';
 
-  useEffect(() => {
-    const storedToken = localStorage.getItem('authToken');
-    if (!storedToken) {
-      alert('No autenticado. Por favor, inicia sesión.');
-      onLogout();
-      return;
-    }
-    setToken(storedToken);
-    fetchMatches(storedToken);
-  }, []);
+  const handleLogout = useCallback(() => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    onLogout();
+  }, [onLogout]);
 
-  const fetchMatches = async (authToken) => {
+  const fetchMatches = useCallback(async (authToken) => {
     try {
       setLoading(true);
       const response = await axios.get(`${API_URL}/matches`, {
@@ -35,18 +30,23 @@ export default function Dashboard({ user, onLogout }) {
       console.error('Error al obtener matches:', error);
       if (error.response?.status === 401) {
         alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-        onLogout();
+        handleLogout();
       }
     } finally {
       setLoading(false);
     }
-  };
+  }, [handleLogout]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
-    onLogout();
-  };
+  useEffect(() => {
+    const storedToken = localStorage.getItem('authToken');
+    if (!storedToken) {
+      alert('No autenticado. Por favor, inicia sesión.');
+      handleLogout();
+      return;
+    }
+    setToken(storedToken);
+    fetchMatches(storedToken);
+  }, [fetchMatches, handleLogout]);
 
   if (!token) {
     return (
@@ -57,7 +57,6 @@ export default function Dashboard({ user, onLogout }) {
     );
   }
 
-  // Si hay un match activo, mostrar el chat
   if (activeMatch) {
     return (
       <div className="dashboard">
@@ -91,7 +90,6 @@ export default function Dashboard({ user, onLogout }) {
     );
   }
 
-  // Mostrar dashboard normal (lista de matches y swipe)
   return (
     <div className="dashboard">
       <header className="dashboard-header">
