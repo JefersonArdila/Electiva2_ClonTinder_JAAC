@@ -6,27 +6,27 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git credentialsId: 'github', url: 'https://github.com/JefersonArdila/Electiva2_ClonTinder_JAAC.git'
+                git branch: 'Devjefer', credentialsId: 'github', url: 'https://github.com/JefersonArdila/Electiva2_ClonTinder_JAAC.git'
             }
         }
         stage('Build Docker Images') {
             steps {
-                sh 'docker-compose build'
+                bat 'docker-compose build'
             }
         }
         stage('Test Backend') {
             steps {
-                sh 'docker-compose run --rm backend npm test'
+                bat 'docker-compose run --rm backend npm test'
             }
         }
         stage('Push Images') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
-                    sh 'docker tag electiva2_clontinder_jaac_backend $DOCKER_USER/electiva2_clontinder_jaac_backend:latest'
-                    sh 'docker push $DOCKER_USER/electiva2_clontinder_jaac_backend:latest'
-                    sh 'docker tag electiva2_clontinder_jaac_frontend $DOCKER_USER/electiva2_clontinder_jaac_frontend:latest'
-                    sh 'docker push $DOCKER_USER/electiva2_clontinder_jaac_frontend:latest'
+                    bat 'docker login -u %DOCKER_USER% -p %DOCKER_PASS%'
+                    bat 'docker tag electiva2_clontinder_jaac_backend %DOCKER_USER%/electiva2_clontinder_jaac_backend:latest'
+                    bat 'docker push %DOCKER_USER%/electiva2_clontinder_jaac_backend:latest'
+                    bat 'docker tag electiva2_clontinder_jaac_frontend %DOCKER_USER%/electiva2_clontinder_jaac_frontend:latest'
+                    bat 'docker push %DOCKER_USER%/electiva2_clontinder_jaac_frontend:latest'
                 }
             }
         }
