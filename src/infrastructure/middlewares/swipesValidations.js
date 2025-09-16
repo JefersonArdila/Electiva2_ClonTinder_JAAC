@@ -1,21 +1,8 @@
 const { body } = require("express-validator");
 
 const validateCreateSwipe = [
-  body("userId")
-    .notEmpty()
-    .isNumeric()
-    .escape()
-    .withMessage("El userId debe ser un número"),
-  body("targetUserId")
-    .notEmpty()
-    .isNumeric()
-    .escape()
-    .withMessage("El targetUserId debe ser un número"),
-  body("action")
-    .notEmpty()
-    .isIn(["like", "dislike"])
-    .escape()
-    .withMessage("La acción debe ser like o dislike"),
+  body("targetUserId").notEmpty().isString().withMessage("ID del usuario objetivo es requerido"),
+  body("action").isIn(["LIKE", "DISLIKE"]).withMessage("Acción debe ser LIKE o DISLIKE"),
 ];
 
 module.exports = {

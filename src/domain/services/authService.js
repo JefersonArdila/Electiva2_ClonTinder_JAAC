@@ -26,22 +26,25 @@ const createUser = async (userData) => {
 };
 
 const loginUser = async (email, password) => {
-    // Search for the user in the database
-      const user = await prisma.user.findUnique({ where: { email } });
-      if (!user) {
-        throw new Error("Usuario o contraseña inválida");
-      }
-      // Validate password
-      const isValidPassword = await bcrypt.compare(password, user.password);
-      if (!isValidPassword) {
-        throw new Error("Usuario o contraseña inválida");
-      }
-      // Generate JWT token
-      const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, {
-        expiresIn: "4h",
-      });
-      return token;
+  const user = await prisma.user.findUnique({ where: { email } });
+
+  if (!user) {
+    throw new Error("Usuario o contraseña inválida");
+  }
+
+  const isValidPassword = await bcrypt.compare(password, user.password);
+  if (!isValidPassword) {
+    throw new Error("Usuario o contraseña inválida");
+  }
+
+  const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, {
+    expiresIn: "4h",
+  });
+
+  //Ahora retornas tanto el token como el user
+  return { token, user };
 };
+
 
 module.exports = {
   createUser,

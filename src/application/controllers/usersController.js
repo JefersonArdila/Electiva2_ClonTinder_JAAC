@@ -1,5 +1,48 @@
 const { validationResult } = require("express-validator");
 
+// Agregar esta función al archivo usersController.js existente
+
+const { PrismaClient } = require("../../../generated/prisma");
+const prisma = new PrismaClient();
+
+// Función para obtener usuarios disponibles para swipe
+const getAvailableUsers = async (req, res) => {
+  try {
+    const currentUserId = req.user.id;
+
+    // Obtener IDs de usuarios a los que ya se les hizo swipe
+    const swipedUsers = await prisma.swipe.findMany({
+      where: { userId: currentUserId },
+      select: { targetUserId: true }
+    });
+
+    const swipedUserIds = swipedUsers.map(swipe => swipe.targetUserId);
+
+    // Obtener usuarios disponibles (excluyendo al usuario actual y a los ya swipeados)
+    const availableUsers = await prisma.user.findMany({
+      where: {
+        AND: [
+          { id: { not: currentUserId } }, // No incluir al usuario actual
+          { id: { notIn: swipedUserIds } } // No incluir usuarios ya swipeados
+        ]
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        gender: true,
+        // Agregar más campos si tienes (edad, bio, fotos, etc.)
+      },
+      take: 10 // Limitar a 10 usuarios por carga
+    });
+
+    res.json(availableUsers);
+  } catch (error) {
+    console.error("Error obteniendo usuarios disponibles:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+};
 const getUserId = (req, res) => {
   const result = validationResult(req);
   if (result.isEmpty()) {
@@ -73,4 +116,5 @@ module.exports = {
   updateUser,
   getUserId,
   deleteUser,
+  getAvailableUsers // Nueva función
 };
