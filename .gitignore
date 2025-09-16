@@ -141,7 +141,8 @@ dist
 # SvelteKit build / generate output
 .svelte-kit
 
-generated/prisma/
+# ⚠️ Antes estaba ignorando Prisma generado, pero ahora lo dejamos para Jenkins
+# generated/prisma/
 prisma/migrations/
 
 # Node.js
