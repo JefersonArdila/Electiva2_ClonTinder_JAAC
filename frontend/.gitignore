@@ -1,0 +1,73 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# production
+/build
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.env
+.env.*
+
+# Logs
+logs/
+*.log
+
+# Prisma
+prisma/.env
+prisma/migrations/*/migration.sql # Si no quieres subir los archivos SQL generados (opcional)
+
+# Docker
+*.local
+docker-compose.override.yml
+
+# VSCode
+.vscode/
+.history/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Build React
+frontend/build/
+frontend/node_modules/
+frontend/.env
+frontend/.env.*
+
+# Test coverage
+coverage/
+frontend/coverage/
+
+# Otros
+*.swp
+*.swo
+
+# IDEs
+.idea/
+*.iml
+
+# Otros archivos temporales
+*.tmp
+*.temp
