@@ -24,6 +24,7 @@ services:
 
   frontend:
     build: ./frontend
+    image: electiva2_clontinder_jaac_frontend
     ports:
       - "3000:80"
     depends_on:
