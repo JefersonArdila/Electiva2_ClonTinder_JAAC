@@ -4,6 +4,7 @@ const {
   createUser,
   updateUser,
   deleteUser,
+  getAvailableUsers, // Nueva importación
 } = require("../controllers/usersController");
 const {
   validateGetUser,
@@ -11,6 +12,7 @@ const {
   validateDeleteUser,
   validateUpdateUser,
 } = require("../../infrastructure/middlewares/userValidations");
+const authenticationToken = require("../../infrastructure/middlewares/auth"); // Importar middleware de auth
 
 const router = express.Router();
 
@@ -20,6 +22,39 @@ const router = express.Router();
  *   name: Users
  *   description: Operaciones relacionadas con usuarios
  */
+
+/**
+ * @swagger
+ * /users/available:
+ *   get:
+ *     summary: Obtener usuarios disponibles para swipe
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de usuarios disponibles
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                   firstName:
+ *                     type: string
+ *                   lastName:
+ *                     type: string
+ *                   email:
+ *                     type: string
+ *                   gender:
+ *                     type: string
+ *       500:
+ *         description: Error del servidor
+ */
+router.get("/users/available", authenticationToken, getAvailableUsers); // Nueva ruta
 
 /**
  * @swagger

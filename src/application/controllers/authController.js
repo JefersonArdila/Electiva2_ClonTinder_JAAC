@@ -1,5 +1,6 @@
 const authService = require("../../domain/services/authService");
 
+
 const registerUser = async (req, res) => {
   try {
     const userData = req.body;
@@ -15,15 +16,20 @@ const registerUser = async (req, res) => {
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const token = await authService.loginUser(email, password);
+
+    // Desestructuramos token y user desde authService
+    const { token, user } = await authService.loginUser(email, password);
+
     return res.json({
       message: "Inicio de sesión exitoso",
       token,
+      user: { id: user.id, email: user.email, role: user.role } // ✅ user.id (no _id)
     });
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }
 };
+
 
 const logoutUser = (req, res) => {
   res.status(200).json({ message: "Sesión cerrada correctamente" });
