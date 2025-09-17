@@ -13,10 +13,12 @@ services:
 
   backend:
     build: .
+    image: electiva2_clontinder_jaac_backend
     ports:
       - "3001:3001"
     environment:
-      DATABASE_URL: "postgresql://postgres:Ja1000413026@localhost:5432/postgres?schema=public"
+      # 👇 Usa el nombre del servicio "db" en lugar de localhost
+      DATABASE_URL: "postgresql://user:password@db:5432/mydb?schema=public"
     depends_on:
       - db
     volumes:
@@ -29,6 +31,9 @@ services:
       - "3000:80"
     depends_on:
       - backend
+    environment:
+      # 👇 si usas React con variables, define la URL del backend
+      REACT_APP_API_URL: "http://localhost:3001"
 
 volumes:
   pgdata:
