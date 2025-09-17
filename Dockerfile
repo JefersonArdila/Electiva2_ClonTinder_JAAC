@@ -6,13 +6,13 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install --legacy-peer-deps
 
-# Copiar el resto del proyecto (incluye generated/prisma)
+# Copiar el resto del proyecto
 COPY . .
 
-# Aseguramos que la carpeta generated/prisma exista en el contenedor
-RUN test -d generated/prisma || (echo "⚠️ La carpeta generated/prisma no existe en el repo" && exit 1)
+# Generar Prisma Client con binarios para Linux
+RUN npx prisma generate
 
 EXPOSE 3001
 
-# Migraciones + arrancar servidor
+# Ejecutar migraciones y arrancar servidor
 CMD npx prisma migrate deploy && node src/index.js
