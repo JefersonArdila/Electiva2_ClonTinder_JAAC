@@ -28,11 +28,13 @@ pipeline {
             }
         }
 
-        stage('Test Frontend') {
+       stage('Test Frontend') {
             steps {
+                bat 'docker-compose run --rm frontend npm install --legacy-peer-deps'
                 bat 'docker-compose run --rm frontend npm test -- --watchAll=false'
             }
         }
+
 
         stage('Push Images') {
             steps {
