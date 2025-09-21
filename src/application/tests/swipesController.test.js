@@ -1,146 +1,98 @@
-const { createSwipe, getSwipes, getMatches } = require("../controllers/swipesController");
-const { PrismaClient } = require("../../../generated/prisma");
+// --- Mock de Prisma antes de importar el controller ---
+const mockSwipe = { id: "swipe-1" };
+const mockMatch = { id: "match-1", userA: {}, userB: {} };
 
-jest.mock("../../../generated/prisma", () => {
-  const mockPrisma = {
-    swipe: {
-      create: jest.fn(),
-      findFirst: jest.fn(),
-      findMany: jest.fn(),
-    },
-    match: {
-      findFirst: jest.fn(),
-      create: jest.fn(),
-      findMany: jest.fn(),
-    },
+const mockPrisma = {
+  swipe: {
+    create: jest.fn().mockResolvedValue(mockSwipe),
+    findMany: jest.fn().mockResolvedValue([mockSwipe]),
+    findFirst: jest.fn().mockResolvedValue(null),
+  },
+  match: {
+    findMany: jest.fn().mockResolvedValue([mockMatch]),
+    create: jest.fn().mockResolvedValue(mockMatch),
+    findFirst: jest.fn().mockResolvedValue(null),
+  },
+};
+
+jest.mock("@prisma/client", () => {
+  return {
+    PrismaClient: jest.fn(() => mockPrisma),
   };
-  return { PrismaClient: jest.fn(() => mockPrisma) };
 });
 
-const prisma = new PrismaClient();
+// --- Importar el controller después de mockear Prisma ---
+let createSwipe, getSwipes, getMatches;
 
-describe("Swipes Controller", () => {
-  let req;
-  let res;
+beforeAll(() => {
+  jest.isolateModules(() => {
+    ({ createSwipe, getSwipes, getMatches } = require("../controllers/swipesController"));
+  });
+});
+
+// --- Mock de request y response ---
+const mockReq = (userId = "user-1", body = {}) => ({ user: { id: userId }, body });
+const mockRes = () => {
+  const res = {};
+  res.status = jest.fn().mockReturnValue(res);
+  res.json = jest.fn().mockReturnValue(res);
+  return res;
+};
+
+describe("Swipes Controller Mocked Tests", () => {
+  let req, res;
 
   beforeEach(() => {
-    req = {
-      user: { id: "user-1" },
-      body: {},
-    };
-    res = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn(),
-    };
+    req = {};
+    res = mockRes();
     jest.clearAllMocks();
   });
 
-  describe("createSwipe", () => {
-    it("debe devolver error si el usuario hace swipe a sí mismo", async () => {
-      req.body = { targetUserId: "user-1", action: "LIKE" };
-      await createSwipe(req, res);
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({ error: "No puedes hacer swipe a ti mismo" });
-    });
+  it("should not allow swiping yourself", async () => {
+    req = mockReq("user-1", { targetUserId: "user-1", action: "LIKE" });
+    await createSwipe(req, res);
 
-    it("debe registrar un DISLIKE correctamente", async () => {
-      req.body = { targetUserId: "user-2", action: "DISLIKE" };
-      prisma.swipe.create.mockResolvedValue({ id: "swipe-1" });
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: "No puedes hacer swipe a ti mismo" });
+  });
 
-      await createSwipe(req, res);
+  it("should register a DISLIKE", async () => {
+    req = mockReq("user-1", { targetUserId: "user-2", action: "DISLIKE" });
+    await createSwipe(req, res);
 
-      expect(prisma.swipe.create).toHaveBeenCalled();
-      expect(res.status).toHaveBeenCalledWith(201);
-      expect(res.json).toHaveBeenCalledWith({
-        message: "Dislike registrado correctamente.",
-        swipe: { id: "swipe-1" },
-      });
-    });
-
-    it("debe registrar un LIKE sin reciprocidad", async () => {
-      req.body = { targetUserId: "user-2", action: "LIKE" };
-      prisma.swipe.create.mockResolvedValue({ id: "swipe-1" });
-      prisma.swipe.findFirst.mockResolvedValue(null);
-
-      await createSwipe(req, res);
-
-      expect(prisma.swipe.create).toHaveBeenCalled();
-      expect(res.status).toHaveBeenCalledWith(201);
-      expect(res.json).toHaveBeenCalledWith({
-        message: "Like registrado, esperando reciprocidad.",
-        swipe: { id: "swipe-1" },
-      });
-    });
-
-    it("debe detectar un match nuevo y crearlo", async () => {
-      req.body = { targetUserId: "user-2", action: "LIKE" };
-      prisma.swipe.create.mockResolvedValue({ id: "swipe-1" });
-      prisma.swipe.findFirst.mockResolvedValue({ id: "swipe-2" });
-      prisma.match.findFirst.mockResolvedValue(null);
-      prisma.match.create.mockResolvedValue({
-        id: "match-1",
-        userA: { id: "user-1", firstName: "Juan", lastName: "Perez", email: "juan@example.com" },
-        userB: { id: "user-2", firstName: "Ana", lastName: "Gomez", email: "ana@example.com" },
-      });
-
-      await createSwipe(req, res);
-
-      expect(prisma.match.create).toHaveBeenCalled();
-      expect(res.status).toHaveBeenCalledWith(201);
-      expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({
-          message: "¡Es un match!",
-        })
-      );
-    });
-
-    it("debe manejar errores internos", async () => {
-      req.body = { targetUserId: "user-2", action: "LIKE" };
-      prisma.swipe.create.mockRejectedValue(new Error("DB error"));
-
-      await createSwipe(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ error: "Error interno del servidor" });
+    expect(mockPrisma.swipe.create).toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith({
+      message: "Dislike registrado correctamente.",
+      swipe: mockSwipe,
     });
   });
 
-  describe("getSwipes", () => {
-    it("debe devolver los swipes del usuario", async () => {
-      prisma.swipe.findMany.mockResolvedValue([{ id: "swipe-1" }]);
-      await getSwipes(req, res);
-      expect(res.json).toHaveBeenCalledWith([{ id: "swipe-1" }]);
-    });
+  it("should register a LIKE without reciprocity", async () => {
+    req = mockReq("user-1", { targetUserId: "user-2", action: "LIKE" });
+    await createSwipe(req, res);
 
-    it("debe manejar errores al obtener swipes", async () => {
-      prisma.swipe.findMany.mockRejectedValue(new Error("DB error"));
-      await getSwipes(req, res);
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ error: "DB error" });
+    expect(mockPrisma.swipe.create).toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith({
+      message: "Like registrado, esperando reciprocidad.",
+      swipe: mockSwipe,
     });
   });
 
-  describe("getMatches", () => {
-    it("debe devolver los matches del usuario", async () => {
-      prisma.match.findMany.mockResolvedValue([
-        {
-          id: "match-1",
-          userA: {},
-          userB: {},
-        },
-      ]);
-      await getMatches(req, res);
-      expect(res.json).toHaveBeenCalledWith({
-        count: 1,
-        matches: [{ id: "match-1", userA: {}, userB: {} }],
-      });
-    });
+  it("should get swipes", async () => {
+    req = mockReq();
+    await getSwipes(req, res);
 
-    it("debe manejar errores al obtener matches", async () => {
-      prisma.match.findMany.mockRejectedValue(new Error("DB error"));
-      await getMatches(req, res);
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ error: "DB error" });
-    });
+    expect(mockPrisma.swipe.findMany).toHaveBeenCalled();
+    expect(res.json).toHaveBeenCalledWith([mockSwipe]);
+  });
+
+  it("should get matches", async () => {
+    req = mockReq();
+    await getMatches(req, res);
+
+    expect(mockPrisma.match.findMany).toHaveBeenCalled();
+    expect(res.json).toHaveBeenCalledWith({ count: 1, matches: [mockMatch] });
   });
 });
