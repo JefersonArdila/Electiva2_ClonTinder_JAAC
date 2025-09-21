@@ -1,10 +1,11 @@
 module.exports = {
+  testEnvironment: "jsdom",
   transform: {
-    "^.+\\.(js|jsx)$": "babel-jest"
+    "^.+\\.[jt]sx?$": "babel-jest"  // Transforma JS/JSX con Babel
   },
-  transformIgnorePatterns: [
-    "/node_modules/(?!(axios)/)"
-  ],
-  moduleFileExtensions: ["js", "jsx"],
-  testEnvironment: "jsdom"
+  moduleNameMapper: {
+    "\\.(css|less|scss|sass)$": "<rootDir>/__mocks__/styleMock.js",
+    "\\.(jpg|jpeg|png|gif|svg)$": "<rootDir>/__mocks__/styleMock.js"
+  },
+  transformIgnorePatterns: ["node_modules/"]
 };

@@ -14,20 +14,20 @@ jest.mock('bcryptjs', () => ({
 // Mock jwt
 jest.mock('jsonwebtoken');
 
-// Mock PrismaClient
-jest.mock('../../../generated/prisma', () => {
+// Mock PrismaClient de @prisma/client
+jest.mock('@prisma/client', () => {
   const mPrisma = {
     user: {
       create: jest.fn(),
       findUnique: jest.fn(),
-      deleteMany: jest.fn()
+      deleteMany: jest.fn(),
     },
     $disconnect: jest.fn(),
   };
   return { PrismaClient: jest.fn(() => mPrisma) };
 });
 
-const { PrismaClient } = require("../../../generated/prisma");
+const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 // App de prueba
@@ -45,6 +45,9 @@ describe('authController', () => {
     jest.clearAllMocks();
   });
 
+  // =====================
+  // REGISTER
+  // =====================
   describe('POST /api/register', () => {
     it('should register a user successfully', async () => {
       prisma.user.findUnique.mockResolvedValue(null);
@@ -87,6 +90,9 @@ describe('authController', () => {
     });
   });
 
+  // =====================
+  // LOGIN
+  // =====================
   describe('POST /api/login', () => {
     it('should login a user and return a token', async () => {
       prisma.user.findUnique.mockResolvedValue({
@@ -147,6 +153,9 @@ describe('authController', () => {
     });
   });
 
+  // =====================
+  // LOGOUT
+  // =====================
   describe('POST /api/logout', () => {
     it('should logout user successfully', async () => {
       const response = await request(app).post('/api/logout');
@@ -155,6 +164,9 @@ describe('authController', () => {
     });
   });
 
+  // =====================
+  // RESET PASSWORD
+  // =====================
   describe('POST /api/reset-password', () => {
     it('should reset password if user is admin', async () => {
       const response = await request(app)
@@ -181,6 +193,9 @@ describe('authController', () => {
     });
   });
 
+  // =====================
+  // MIDDLEWARE
+  // =====================
   describe('Middleware: authenticationToken', () => {
     it('should return 401 if no token is provided', async () => {
       const response = await request(app).get('/api/protegido');
