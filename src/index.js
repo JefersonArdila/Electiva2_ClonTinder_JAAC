@@ -14,7 +14,7 @@ const swipeRoutes = require("./application/routes/swipes");
 const messagesRoutes = require("./application/routes/messages");
 
 const authenticationToken = require("./infrastructure/middlewares/auth");
-const { PrismaClient } = require("../generated/prisma");
+const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 const app = express();
