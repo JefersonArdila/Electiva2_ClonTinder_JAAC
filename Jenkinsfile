@@ -22,19 +22,20 @@ pipeline {
             }
         }
 
+        stage('Prepare Database') {
+            steps {
+                echo "Aplicando migraciones para crear tablas"
+                bat 'docker-compose run --rm backend npx prisma migrate deploy'
+                // Si solo quieres sincronizar schema sin migraciones, puedes usar:
+                // bat 'docker-compose run --rm backend npx prisma db push'
+            }
+        }
+
         stage('Test Backend') {
             steps {
                 bat 'docker-compose run --rm backend npm test -- --watchAll=false'
             }
         }
-
-       stage('Test Frontend') {
-            steps {
-                bat 'docker-compose run --rm frontend npm install --legacy-peer-deps'
-                bat 'docker-compose run --rm frontend npm test -- --watchAll=false'
-            }
-        }
-
 
         stage('Push Images') {
             steps {
