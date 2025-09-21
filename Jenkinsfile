@@ -9,16 +9,31 @@ pipeline {
                 git branch: 'Devjefer', credentialsId: 'github', url: 'https://github.com/JefersonArdila/Electiva2_ClonTinder_JAAC.git'
             }
         }
+
         stage('Build Docker Images') {
             steps {
                 bat 'docker-compose build'
             }
         }
-        stage('Test Backend') {
+
+        stage('Run Containers') {
             steps {
-                bat 'docker-compose run --rm backend npm test'
+                bat 'docker-compose up -d'
             }
         }
+
+        stage('Test Backend') {
+            steps {
+                bat 'docker-compose run --rm backend npm test -- --watchAll=false'
+            }
+        }
+
+        stage('Test Frontend') {
+            steps {
+                bat 'docker-compose run --rm frontend npm test -- --watchAll=false'
+            }
+        }
+
         stage('Push Images') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
@@ -29,6 +44,17 @@ pipeline {
                     bat 'docker push %DOCKER_USER%/electiva2_clontinder_jaac_frontend:latest'
                 }
             }
+        }
+    }
+    post {
+        always {
+            echo "Pipeline finalizada."
+        }
+        failure {
+            echo "❌ La pipeline falló."
+        }
+        success {
+            echo "✅ Proyecto corriendo en http://localhost:3000 (Frontend) y http://localhost:3001 (Backend API)."
         }
     }
 }

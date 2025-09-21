@@ -1,0 +1,56 @@
+# Archivos de Node.js
+node_modules
+npm-debug.log
+Dockerfile
+docker-compose.yml
+.dockerignore
+.prisma
+
+# Logs
+logs
+*.log
+
+# Dependencias locales
+*.local
+
+# Archivos de entorno
+.env
+.env.*  
+
+# Git
+.git
+.gitignore
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+
+# Prisma
+prisma/migrations/
+prisma/.env
+# ⚠️ NO ignoramos generated/prisma/ para que esté disponible en el contenedor
+
+# Coverage y tests
+coverage/
+*.test.js
+*.spec.js
+frontend/coverage/
+
+# IDEs
+.vscode/
+.idea/
+*.iml
+
+# Archivos temporales
+*.tmp
+*.swp
+*.swo
+
+# Frontend build (se genera dentro de Docker)
+frontend/node_modules/
+frontend/build/
+frontend/.env
+frontend/.env.*

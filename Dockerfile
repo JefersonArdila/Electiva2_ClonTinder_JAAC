@@ -9,10 +9,10 @@ RUN npm install --legacy-peer-deps
 # Copiar el resto del proyecto
 COPY . .
 
-# Generar Prisma Client con binarios para Linux
-RUN npx prisma generate
+# Generar Prisma Client para Linux
+RUN npx prisma generate --schema=./prisma/schema.prisma
 
-EXPOSE 3001
+EXPOSE 3000
 
-# Ejecutar migraciones y arrancar servidor
-CMD npx prisma migrate deploy && node src/index.js
+# Comando de arranque: primero migraciones, luego server
+CMD ["sh", "-c", "npx prisma migrate deploy && node src/index.js"]
