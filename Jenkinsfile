@@ -9,34 +9,16 @@ pipeline {
                 git branch: 'Devjefer', credentialsId: 'github', url: 'https://github.com/JefersonArdila/Electiva2_ClonTinder_JAAC.git'
             }
         }
-
         stage('Build Docker Images') {
             steps {
                 bat 'docker-compose build'
             }
         }
-
-        stage('Run Containers') {
-            steps {
-                bat 'docker-compose up -d'
-            }
-        }
-
-        stage('Prepare Database') {
-            steps {
-                echo "Aplicando migraciones para crear tablas"
-                bat 'docker-compose run --rm backend npx prisma migrate deploy'
-                // Si solo quieres sincronizar schema sin migraciones, puedes usar:
-                // bat 'docker-compose run --rm backend npx prisma db push'
-            }
-        }
-
         stage('Test Backend') {
             steps {
-                bat 'docker-compose run --rm backend npm test -- --watchAll=false'
+                bat 'docker-compose run --rm backend npm test'
             }
         }
-
         stage('Push Images') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
@@ -47,17 +29,6 @@ pipeline {
                     bat 'docker push %DOCKER_USER%/electiva2_clontinder_jaac_frontend:latest'
                 }
             }
-        }
-    }
-    post {
-        always {
-            echo "Pipeline finalizada."
-        }
-        failure {
-            echo "❌ La pipeline falló."
-        }
-        success {
-            echo "✅ Proyecto corriendo en http://localhost:3000 (Frontend) y http://localhost:3001 (Backend API)."
         }
     }
 }
