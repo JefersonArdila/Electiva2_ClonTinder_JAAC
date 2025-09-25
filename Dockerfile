@@ -9,7 +9,7 @@ RUN npm install --legacy-peer-deps
 # Copiar el resto del proyecto
 COPY . .
 
-# Generar Prisma Client para Linux
+# Generar Prisma Client
 RUN npx prisma generate --schema=./prisma/schema.prisma
 
 EXPOSE 3000
