@@ -4,6 +4,7 @@ pipeline {
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub')       // credenciales DockerHub
         ACR_LOGIN_SERVER = "mproyectoelectiva3.azurecr.io"     // servidor ACR
+        AZURE_CLI_PATH = "C:\\Program Files (x86)\\Microsoft SDKs\\Azure\\CLI2\\wbin\\az.cmd"
     }
 
     stages {
@@ -56,8 +57,8 @@ pipeline {
                 echo "☁️ Subiendo imágenes a Azure Container Registry..."
                 withCredentials([usernamePassword(credentialsId: 'azure-acr', usernameVariable: 'ACR_USER', passwordVariable: 'ACR_PASSWORD')]) {
                     bat """
-                    az login --service-principal -u %ACR_USER% -p %ACR_PASSWORD% --tenant ca3f1d6b-fd1f-40b1-b41a-488b980e9f7f
-                    az acr login --name mproyectoelectiva3
+                    "%AZURE_CLI_PATH%" login --service-principal -u %ACR_USER% -p %ACR_PASSWORD% --tenant ca3f1d6b-fd1f-40b1-b41a-488b980e9f7f
+                    "%AZURE_CLI_PATH%" acr login --name mproyectoelectiva3
                     docker tag electiva2_clontinder_jaac_backend %ACR_LOGIN_SERVER%/backend:latest
                     docker tag electiva2_clontinder_jaac_frontend %ACR_LOGIN_SERVER%/frontend:latest
                     docker push %ACR_LOGIN_SERVER%/backend:latest
@@ -71,8 +72,8 @@ pipeline {
             steps {
                 echo "🚀 Reiniciando contenedores en Azure Container Instances..."
                 bat """
-                az container restart --name backend-container --resource-group mi-proyecto
-                az container restart --name frontend-container --resource-group mi-proyecto
+                "%AZURE_CLI_PATH%" container restart --name backend-container --resource-group mi-proyecto
+                "%AZURE_CLI_PATH%" container restart --name frontend-container --resource-group mi-proyecto
                 """
             }
         }
