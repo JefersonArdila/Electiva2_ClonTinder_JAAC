@@ -2,9 +2,8 @@ pipeline {
     agent any
 
     environment {
-        // Credenciales seguras de Jenkins
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub')
-        ACR_LOGIN_SERVER = "mproyectoelectiva3.azurecr.io"
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub')       // credenciales DockerHub
+        ACR_LOGIN_SERVER = "mproyectoelectiva3.azurecr.io"     // servidor ACR
     }
 
     stages {
@@ -15,20 +14,31 @@ pipeline {
             }
         }
 
-        stage('Build Docker Images') {
+        stage('Build Docker Images (Local)') {
             steps {
+                echo "🛠️ Construyendo imágenes Docker locales..."
                 bat 'docker-compose build'
             }
         }
 
         stage('Test Backend') {
             steps {
+                echo "🧪 Ejecutando pruebas del backend..."
                 bat 'docker-compose run --rm backend npm test'
+            }
+        }
+
+        stage('Deploy Containers Locally') {
+            steps {
+                echo "🚀 Desplegando contenedores localmente en Docker Desktop..."
+                bat 'docker-compose down'
+                bat 'docker-compose up -d'
             }
         }
 
         stage('Push Images to DockerHub') {
             steps {
+                echo "📤 Subiendo imágenes a DockerHub..."
                 withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     bat """
                     docker login -u %DOCKER_USER% -p %DOCKER_PASS%
@@ -43,9 +53,11 @@ pipeline {
 
         stage('Push Images to Azure Container Registry') {
             steps {
+                echo "☁️ Subiendo imágenes a Azure Container Registry..."
                 withCredentials([usernamePassword(credentialsId: 'azure-acr', usernameVariable: 'ACR_USER', passwordVariable: 'ACR_PASSWORD')]) {
                     bat """
-                    docker login %ACR_LOGIN_SERVER% -u %ACR_USER% -p %ACR_PASSWORD%
+                    az login --service-principal -u %ACR_USER% -p %ACR_PASSWORD% --tenant ca3f1d6b-fd1f-40b1-b41a-488b980e9f7f
+                    az acr login --name mproyectoelectiva3
                     docker tag electiva2_clontinder_jaac_backend %ACR_LOGIN_SERVER%/backend:latest
                     docker tag electiva2_clontinder_jaac_frontend %ACR_LOGIN_SERVER%/frontend:latest
                     docker push %ACR_LOGIN_SERVER%/backend:latest
@@ -55,35 +67,26 @@ pipeline {
             }
         }
 
-        stage('Deploy to Azure') {
+        stage('Deploy Containers to Azure') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'azure-acr', usernameVariable: 'ACR_USER', passwordVariable: 'ACR_PASSWORD')]) {
-                    bat """
-                    az login --service-principal -u %ACR_USER% -p %ACR_PASSWORD% --tenant <TU_TENANT_ID>
-                    az container restart --name backend-container --resource-group mi-proyecto
-                    az container restart --name frontend-container --resource-group mi-proyecto
-                    """
-                }
-            }
-        }
-
-        stage('Deploy Containers Locally (Opcional)') {
-            steps {
-                bat 'docker-compose down'
-                bat 'docker-compose up -d'
+                echo "🚀 Reiniciando contenedores en Azure Container Instances..."
+                bat """
+                az container restart --name backend-container --resource-group mi-proyecto
+                az container restart --name frontend-container --resource-group mi-proyecto
+                """
             }
         }
     }
 
     post {
         always {
-            echo "Pipeline finalizada."
+            echo "🏁 Pipeline finalizada."
         }
         failure {
             echo "❌ La pipeline falló."
         }
         success {
-            echo "✅ Proyecto desplegado correctamente."
+            echo "✅ Despliegue local y en Azure completado correctamente."
         }
     }
 }
