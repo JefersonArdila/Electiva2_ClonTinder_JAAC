@@ -28,6 +28,14 @@ pipeline {
             }
         }
 
+        stage('Deploy Containers Locally') {
+            steps {
+                echo "🚀 Desplegando contenedores localmente en Docker Desktop..."
+                bat 'docker-compose down'
+                bat 'docker-compose up -d'
+            }
+        }
+
         stage('Push Images to DockerHub') {
             steps {
                 echo "📤 Subiendo imágenes a DockerHub..."
@@ -46,12 +54,24 @@ pipeline {
         stage('Push Images to Azure Container Registry') {
             steps {
                 echo "☁️ Subiendo imágenes a Azure Container Registry..."
+                withCredentials([usernamePassword(credentialsId: 'azure-acr', usernameVariable: 'ACR_USER', passwordVariable: 'ACR_PASSWORD')]) {
+                    bat """
+                    docker login %ACR_LOGIN_SERVER% -u %ACR_USER% -p %ACR_PASSWORD%
+                    docker tag electiva2_clontinder_jaac_backend %ACR_LOGIN_SERVER%/backend:latest
+                    docker tag electiva2_clontinder_jaac_frontend %ACR_LOGIN_SERVER%/frontend:latest
+                    docker push %ACR_LOGIN_SERVER%/backend:latest
+                    docker push %ACR_LOGIN_SERVER%/frontend:latest
+                    """
+                }
+            }
+        }
+
+        stage('Deploy Containers to Azure') {
+            steps {
+                echo "🚀 Reiniciando contenedores en Azure Container Instances..."
                 bat """
-                "C:\\Program Files (x86)\\Microsoft SDKs\\Azure\\CLI2\\wbin\\az.cmd" acr login --name mproyectoelectiva3
-                docker tag electiva2_clontinder_jaac_backend %ACR_LOGIN_SERVER%/backend:latest
-                docker tag electiva2_clontinder_jaac_frontend %ACR_LOGIN_SERVER%/frontend:latest
-                docker push %ACR_LOGIN_SERVER%/backend:latest
-                docker push %ACR_LOGIN_SERVER%/frontend:latest
+                az container restart --name backend-container --resource-group mi-proyecto
+                az container restart --name frontend-container --resource-group mi-proyecto
                 """
             }
         }
@@ -65,7 +85,7 @@ pipeline {
             echo "❌ La pipeline falló."
         }
         success {
-            echo "✅ Despliegue completado correctamente en DockerHub y ACR."
+            echo "✅ Despliegue local y en Azure completado correctamente."
         }
     }
 }
