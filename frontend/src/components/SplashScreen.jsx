@@ -43,7 +43,7 @@ export default function SplashScreen({ onLoginSuccess, onSetScreen }) {
             </div>
           </div>
 
-          <h1 className="app-name">Clon Tinder22</h1>
+          <h1 className="app-name">Clon Tinder222</h1>
           <p className="tagline">Encuentra tu match perfecto</p>
 
           <div className="loading-container">

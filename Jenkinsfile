@@ -4,6 +4,7 @@ pipeline {
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub')       // credenciales DockerHub
         ACR_LOGIN_SERVER = "mproyectoelectiva3.azurecr.io"     // servidor ACR
+        AZ_CLI_PATH = '"C:\\Program Files (x86)\\Microsoft SDKs\\Azure\\CLI2\\wbin\\az.cmd"'
     }
 
     stages {
@@ -56,23 +57,14 @@ pipeline {
                 echo "☁️ Subiendo imágenes a Azure Container Registry..."
                 withCredentials([usernamePassword(credentialsId: 'azure-acr', usernameVariable: 'ACR_USER', passwordVariable: 'ACR_PASSWORD')]) {
                     bat """
-                    docker login %ACR_LOGIN_SERVER% -u %ACR_USER% -p %ACR_PASSWORD%
+                    %AZ_CLI_PATH% login --username %ACR_USER% --password %ACR_PASSWORD%
+                    %AZ_CLI_PATH% acr login --name mproyectoelectiva3
                     docker tag electiva2_clontinder_jaac_backend %ACR_LOGIN_SERVER%/backend:latest
                     docker tag electiva2_clontinder_jaac_frontend %ACR_LOGIN_SERVER%/frontend:latest
                     docker push %ACR_LOGIN_SERVER%/backend:latest
                     docker push %ACR_LOGIN_SERVER%/frontend:latest
                     """
                 }
-            }
-        }
-
-        stage('Deploy Containers to Azure') {
-            steps {
-                echo "🚀 Reiniciando contenedores en Azure Container Instances..."
-                bat """
-                az container restart --name backend-container --resource-group mi-proyecto
-                az container restart --name frontend-container --resource-group mi-proyecto
-                """
             }
         }
     }
@@ -85,7 +77,7 @@ pipeline {
             echo "❌ La pipeline falló."
         }
         success {
-            echo "✅ Despliegue local y en Azure completado correctamente."
+            echo "✅ Subida de imágenes a DockerHub y Azure Container Registry completada correctamente."
         }
     }
 }
