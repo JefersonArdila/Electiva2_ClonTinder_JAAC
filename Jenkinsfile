@@ -28,14 +28,6 @@ pipeline {
             }
         }
 
-        stage('Deploy Containers Locally') {
-            steps {
-                echo "🚀 Desplegando contenedores localmente en Docker Desktop..."
-                bat 'docker-compose down'
-                bat 'docker-compose up -d'
-            }
-        }
-
         stage('Push Images to DockerHub') {
             steps {
                 echo "📤 Subiendo imágenes a DockerHub..."
@@ -63,16 +55,6 @@ pipeline {
                 """
             }
         }
-
-        stage('Deploy Containers to Azure') {
-            steps {
-                echo "🚀 Reiniciando contenedores en Azure Container Instances..."
-                bat """
-                "C:\\Program Files (x86)\\Microsoft SDKs\\Azure\\CLI2\\wbin\\az.cmd" container restart --name backend-container --resource-group mi-proyecto
-                "C:\\Program Files (x86)\\Microsoft SDKs\\Azure\\CLI2\\wbin\\az.cmd" container restart --name frontend-container --resource-group mi-proyecto
-                """
-            }
-        }
     }
 
     post {
@@ -83,7 +65,7 @@ pipeline {
             echo "❌ La pipeline falló."
         }
         success {
-            echo "✅ Despliegue local y en Azure completado correctamente."
+            echo "✅ Despliegue completado correctamente en DockerHub y ACR."
         }
     }
 }
